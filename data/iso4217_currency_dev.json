@@ -1,0 +1,19 @@
+{
+  "currencies": [
+    {
+      "code": "EUR",
+      "name": "Euro",
+      "number": "978"
+    },
+    {
+      "code": "GBP",
+      "name": "Pound sterling",
+      "number": "826"
+    },
+    {
+      "code": "USD",
+      "name": "United States dollar",
+      "number": "840"
+    }
+  ]
+}
