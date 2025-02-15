@@ -100,7 +100,7 @@ func TestRecordTransactionHandler(t *testing.T) {
 			Description:   "Test Transaction",
 			DebitAccount:  "ACC1",
 			CreditAccount: "ACC2",
-			Money: models.Money{
+			Amount: models.Money{
 				Amount:   decimal.NewFromInt(50),
 				Currency: "USD",
 			},
@@ -136,7 +136,7 @@ func TestRecordTransactionHandler(t *testing.T) {
 			ID:            "TX123",
 			DebitAccount:  "ACC1",
 			CreditAccount: "ACC2",
-			Money: models.Money{
+			Amount: models.Money{
 				Amount:   decimal.NewFromInt(50),
 				Currency: "USD",
 			},
@@ -212,7 +212,7 @@ func TestGetTransactionHistoryHandler(t *testing.T) {
 				Description:   "First Transaction",
 				DebitAccount:  "ACC123",
 				CreditAccount: "ACC456",
-				Money: models.Money{
+				Amount: models.Money{
 					Amount:   decimal.NewFromInt(100),
 					Currency: "USD",
 				},
@@ -223,7 +223,7 @@ func TestGetTransactionHistoryHandler(t *testing.T) {
 				Description:   "Second Transaction",
 				DebitAccount:  "ACC789",
 				CreditAccount: "ACC123",
-				Money: models.Money{
+				Amount: models.Money{
 					Amount:   decimal.NewFromInt(50),
 					Currency: "USD",
 				},

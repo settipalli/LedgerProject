@@ -88,7 +88,7 @@ func TestRouteHandlers(t *testing.T) {
 			ID:            "TX1",
 			DebitAccount:  "ACC1",
 			CreditAccount: "ACC2",
-			Money: models.Money{
+			Amount: models.Money{
 				Amount:   decimal.NewFromInt(100),
 				Currency: "USD",
 			},
@@ -133,7 +133,7 @@ func TestRouteHandlers(t *testing.T) {
 				ID:            "TX1",
 				DebitAccount:  accountID,
 				CreditAccount: "ACC2",
-				Money: models.Money{
+				Amount: models.Money{
 					Amount:   decimal.NewFromInt(100),
 					Currency: "USD",
 				},
@@ -260,7 +260,7 @@ func TestServerIntegration(t *testing.T) {
 			Description:   "Test Transaction",
 			DebitAccount:  "INT1",
 			CreditAccount: "INT2",
-			Money: models.Money{
+			Amount: models.Money{
 				Amount:   decimal.NewFromInt(100),
 				Currency: "USD",
 			},

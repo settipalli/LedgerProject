@@ -1,6 +1,6 @@
 # Ledger Project - Double-Entry Ledger System
 
-A robust double-entry accounting system built in Go, designed to handle financial transactions with strict consistency
+A double-entry accounting system built in Go, designed to handle financial transactions with strict consistency
 guarantees and proper currency handling.
 
 
@@ -278,7 +278,7 @@ curl -X POST http://localhost:8080/transactions \
     "description": "Initial bank loan",
     "debit_account": "1001",
     "credit_account": "2001",
-    "money": {
+    "amount": {
       "amount": "10000.00",
       "currency": "USD"
     }
@@ -292,7 +292,7 @@ curl -X POST http://localhost:8080/transactions \
     "description": "Client payment for services",
     "debit_account": "1001",
     "credit_account": "4001",
-    "money": {
+    "amount": {
       "amount": "5000.00",
       "currency": "USD"
     }
@@ -306,7 +306,7 @@ curl -X POST http://localhost:8080/transactions \
     "description": "Office rent payment",
     "debit_account": "5001",
     "credit_account": "1001",
-    "money": {
+    "amount": {
       "amount": "2000.00",
       "currency": "USD"
     }
@@ -345,7 +345,7 @@ Expected response:
     "description": "Initial bank loan",
     "debit_account": "1001",
     "credit_account": "2001",
-    "money": {
+    "amount": {
       "amount": "10000",
       "currency": "USD"
     }
@@ -356,7 +356,7 @@ Expected response:
     "description": "Client payment for services",
     "debit_account": "1001",
     "credit_account": "4001",
-    "money": {
+    "amount": {
       "amount": "5000",
       "currency": "USD"
     }
@@ -367,7 +367,7 @@ Expected response:
     "description": "Office rent payment",
     "debit_account": "5001",
     "credit_account": "1001",
-    "money": {
+    "amount": {
       "amount": "2000",
       "currency": "USD"
     }

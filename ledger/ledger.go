@@ -5,21 +5,24 @@ import (
 	"fmt"
 	"github.com/shopspring/decimal"
 	"ledgerproject/models"
+	"ledgerproject/services"
 	"log"
 	"sync"
 	"time"
 )
 
 type ledger struct {
-	accounts     map[string]*models.Account
-	transactions []models.Transaction
-	mu           sync.RWMutex
+	accounts          map[string]*models.Account
+	transactions      []models.Transaction
+	currencyValidator *services.CurrencyValidator
+	mu                sync.RWMutex
 }
 
-func NewLedger() LedgerService {
+func NewLedger(cv *services.CurrencyValidator) LedgerService {
 	l := &ledger{
-		accounts:     make(map[string]*models.Account),
-		transactions: []models.Transaction{},
+		accounts:          make(map[string]*models.Account),
+		transactions:      []models.Transaction{},
+		currencyValidator: cv,
 	}
 
 	// Start periodic balance checking
@@ -33,13 +36,26 @@ func (l *ledger) CreateAccount(account models.Account) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
+	// Validate if account already exists
 	if _, exists := l.accounts[account.ID]; exists {
 		return fmt.Errorf("account %s already exists", account.ID)
 	}
 
+	// Validate currency
+	if !l.currencyValidator.IsValid(account.Currency) {
+		return fmt.Errorf("invalid currency code: %s", account.Currency)
+	}
+
+	// Initialize balance if zero
 	if account.Balance.Amount.IsZero() {
 		account.Balance.Amount = decimal.Zero
 		account.Balance.Currency = account.Currency
+	} else {
+		// Validate that balance currency matches account currency
+		if account.Balance.Currency != account.Currency {
+			return fmt.Errorf("balance currency (%s) does not match account currency (%s)",
+				account.Balance.Currency, account.Currency)
+		}
 	}
 
 	account.CreateDateTime = time.Now().UTC()
@@ -67,18 +83,18 @@ func (l *ledger) RecordTransaction(tx models.Transaction) error {
 	}
 	initialCreditBalance = creditAcc.Balance.Amount
 
-	if debitAcc.Currency != tx.Money.Currency || creditAcc.Currency != tx.Money.Currency {
+	if debitAcc.Currency != tx.Amount.Currency || creditAcc.Currency != tx.Amount.Currency {
 		return fmt.Errorf("currency mismatch between accounts and transaction")
 	}
 
 	// Check if debit account has sufficient funds
-	if debitAcc.Balance.Amount.LessThan(tx.Money.Amount) {
+	if debitAcc.Balance.Amount.LessThan(tx.Amount.Amount) {
 		return fmt.Errorf("insufficient funds in debit account %s", tx.DebitAccount)
 	}
 
 	// Perform the transaction
-	debitAcc.Balance.Amount = debitAcc.Balance.Amount.Sub(tx.Money.Amount)
-	creditAcc.Balance.Amount = creditAcc.Balance.Amount.Add(tx.Money.Amount)
+	debitAcc.Balance.Amount = debitAcc.Balance.Amount.Sub(tx.Amount.Amount)
+	creditAcc.Balance.Amount = creditAcc.Balance.Amount.Add(tx.Amount.Amount)
 
 	// Verify the books are balanced
 	totalChange := initialDebitBalance.Sub(debitAcc.Balance.Amount).
@@ -89,7 +105,7 @@ func (l *ledger) RecordTransaction(tx models.Transaction) error {
 		debitAcc.Balance.Amount = initialDebitBalance
 		creditAcc.Balance.Amount = initialCreditBalance
 		return fmt.Errorf("transaction failed: books would be unbalanced by %s %s",
-			totalChange.String(), tx.Money.Currency)
+			totalChange.String(), tx.Amount.Currency)
 	}
 
 	// Record the transaction
