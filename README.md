@@ -47,12 +47,22 @@ cd ledgerproject
 go mod tidy
 ```
 
-3. Run the application:
+3. Running Tests
+```bash
+go test ./...
+```
+
+4. Building the Project
+```bash
+go build -o ledger-service
+```
+
+5. Run the application:
 ```bash
 go run main.go
 ```
 
-The server will start on port 8080 by default.
+The server will use the development configuration and start on port 8080 by default.
 
 
 ## API Endpoints
@@ -460,6 +470,25 @@ Example response:
 ]
 ```
 
+
+## Future Improvements
+
+1. Add authentication and authorization
+2. Implement transaction categories
+3. Add date range filtering for transaction history
+4. Add pagination for transaction history
+5. Implement database storage option
+6. Add metrics and monitoring
+7. Add API documentation using Swagger
+8. Implement request validation middleware
+9. Add support for conversion across multiple currencies
+
+
 ## License
 
 This project is licensed under the Apache version 2 - see the LICENSE file for details.
+
+
+## Support
+
+For support, please open an issue in the GitHub repository.
