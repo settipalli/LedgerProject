@@ -31,8 +31,8 @@ The project follows a clean architecture pattern with the following components:
 
 ### Prerequisites
 
-- Go 1.18 or higher
-- Git
+- Go 1.23.2 or higher (follow https://go.dev/doc/install to install Go in your machine)
+- Git (https://git-scm.com/downloads)
 
 ### Installation
 
@@ -108,90 +108,6 @@ Retrieves the current balance for an account.
 GET /accounts/{accountId}/history
 ```
 Retrieves the transaction history for an account.
-
-
-## Technical Details
-
-### Concurrency Handling
-- Uses `sync.RWMutex` for thread-safe operations
-- Implements proper locking mechanisms for account creation and transaction processing
-- Supports concurrent read operations for balance queries
-
-### Currency Handling
-- Uses `decimal.Decimal` for precise monetary calculations
-- Validates currencies against ISO 4217 standards
-- Prevents mixed-currency transactions
-
-### Transaction Consistency
-- Enforces double-entry accounting principles
-- Validates account existence before transactions
-- Ensures currency matching between accounts and transactions
-- Maintains transaction history with timestamps
-
-## Configuration
-
-The system supports three environments:
-- Development (`:8080`)
-- Test (`:8081`)
-- Production (`:80`)
-
-Environment-specific configurations are managed through the `config` package.
-
-The environment selection is done at startup time, and the appropriate configuration is provided to the application.
-
-You can run the application with one of the pre-supported environment settings by specifying the `APP_ENV` variable as
-below:
-
-```bash
-# For development
-export APP_ENV=dev
-# or
-APP_ENV=dev go run main.go
-
-# For testing
-export APP_ENV=test
-# or
-APP_ENV=test go run main.go
-
-# For production
-export APP_ENV=prod
-# or
-APP_ENV=prod go run main.go
-```
-
-## Dependencies
-
-- `github.com/gorilla/mux`: HTTP routing
-- `github.com/shopspring/decimal`: Precise decimal calculations
-- `go.uber.org/fx`: Dependency injection
-- Standard Go libraries
-
-## Error Handling
-
-The system provides detailed error messages for:
-- Invalid account creation attempts
-- Non-existent accounts
-- Currency mismatches
-- Invalid transaction amounts
-- Missing required fields
-
-## Best Practices
-
-When using this ledger system:
-
-1. Always create accounts before attempting transactions
-2. Ensure matching currencies for transactions
-3. Use proper account types (asset, liability, equity, revenue, expense)
-4. Monitor transaction history for audit purposes
-5. Handle errors appropriately in your application
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
 
 ## Complete Workflow Example
@@ -374,6 +290,91 @@ Expected response:
   }
 ]
 ```
+
+
+## Technical Details
+
+### Concurrency Handling
+- Uses `sync.RWMutex` for thread-safe operations
+- Implements proper locking mechanisms for account creation and transaction processing
+- Supports concurrent read operations for balance queries
+
+### Currency Handling
+- Uses `decimal.Decimal` for precise monetary calculations
+- Validates currencies against ISO 4217 standards
+- Prevents mixed-currency transactions
+
+### Transaction Consistency
+- Enforces double-entry accounting principles
+- Validates account existence before transactions
+- Ensures currency matching between accounts and transactions
+- Maintains transaction history with timestamps
+
+## Configuration
+
+The system supports three environments:
+- Development (`:8080`)
+- Test (`:8081`)
+- Production (`:80`)
+
+Environment-specific configurations are managed through the `config` package.
+
+The environment selection is done at startup time, and the appropriate configuration is provided to the application.
+
+You can run the application with one of the pre-supported environment settings by specifying the `APP_ENV` variable as
+below:
+
+```bash
+# For development
+export APP_ENV=dev
+# or
+APP_ENV=dev go run main.go
+
+# For testing
+export APP_ENV=test
+# or
+APP_ENV=test go run main.go
+
+# For production
+export APP_ENV=prod
+# or
+APP_ENV=prod go run main.go
+```
+
+## Dependencies
+
+- `github.com/gorilla/mux`: HTTP routing
+- `github.com/shopspring/decimal`: Precise decimal calculations
+- `go.uber.org/fx`: Dependency injection
+- Standard Go libraries
+
+## Error Handling
+
+The system provides detailed error messages for:
+- Invalid account creation attempts
+- Non-existent accounts
+- Currency mismatches
+- Invalid transaction amounts
+- Missing required fields
+
+## Best Practices
+
+When using this ledger system:
+
+1. Always create accounts before attempting transactions
+2. Ensure matching currencies for transactions
+3. Use proper account types (asset, liability, equity, revenue, expense)
+4. Monitor transaction history for audit purposes
+5. Handle errors appropriately in your application
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
 
 ## Development: follow the below guidelines to introduce a new API.
 ### Example: Implementing an API to list all active accounts
