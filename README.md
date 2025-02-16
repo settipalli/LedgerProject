@@ -33,8 +33,10 @@ The project follows a clean architecture pattern with the following components:
 
 - Go 1.23.2 or higher (follow https://go.dev/doc/install to install Go in your machine)
 - Git (https://git-scm.com/downloads)
+- golangci-lint 1.61.0 or higher (for code linting) - https://golangci-lint.run/welcome/install/
+- GNU Make (3.81 or later) - https://formulae.brew.sh/formula/make
 
-### Installation
+### Build and installation
 
 1. Clone the repository:
 ```bash
@@ -63,6 +65,93 @@ go run main.go
 ```
 
 The server will use the development configuration and start on port 8080 by default.
+
+### Make Targets
+
+If you are using a system with GNU make installed, the commands would be of help.
+
+| Target       | Description                                                 | Usage                   |
+| ------------ | ----------------------------------------------------------- | ----------------------- |
+| `make all`   | Complete build workflow: clean, deps, test, lint, and build | Development and CI      |
+| `make build` | Builds the application binary                               | Building for deployment |
+| `make run`   | Builds and runs the application                             | Local development       |
+| `make dev`   | Development workflow (deps, fmt, lint, test, build)         | Active development      |
+
+#### Development Targets
+
+| Target       | Description                                 | Usage               |
+| ------------ |---------------------------------------------| ------------------- |
+| `make deps`  | Downloads and verifies dependencies         | Setting up project  |
+| `make fmt`   | Formats all Go code                         | Before commits      |
+| `make lint`  | Runs golangci-lint checks                   | Code quality checks |
+| `make test`  | Runs tests and coverage                     | Verification        |
+| `make bench` | Runs benchmarks                             | Performance testing |
+
+#### Cleanup and Maintenance
+
+| Target          | Description                            | Usage            |
+| --------------- | -------------------------------------- | ---------------- |
+| `make clean`    | Removes build artifacts and test cache | Cleanup          |
+| `make security` | Runs security checks using gosec       | Security audits  |
+| `make version`  | Shows build version information        | Version checking |
+
+### Common Usage Examples
+
+1. **First Time Setup**:
+   ```bash
+   make deps
+   make dev
+   ```
+
+2. **Regular Development**:
+   ```bash
+   make run
+   ```
+
+3. **Before Committing**:
+   ```bash
+   make fmt
+   make lint
+   make test
+   ```
+
+4. **CI Pipeline**:
+   ```bash
+   make all
+   ```
+
+5. **Production Build**:
+   ```bash
+   make clean
+   make build
+   ```
+
+### Testing Coverage
+
+Test coverage reports are generated in the `coverage` directory:
+- HTML coverage report: `coverage/coverage.html`
+- Coverage data: `coverage/coverage.out`
+
+### Build Artifacts
+
+Build artifacts are stored in the following locations:
+- Binary: `build/ledger`
+- Coverage reports: `coverage/`
+- Temporary files: Cleaned up with `make clean`
+
+### Additional Notes
+
+- The build system is designed to be idempotent
+- Security checks are integrated into the build process
+
+### Troubleshooting
+
+If you encounter issues:
+
+1. Ensure all prerequisites are installed
+2. Run `make clean` followed by `make deps`
+3. Check environment variables
+4. Verify Go version compatibility
 
 
 ## API Endpoints
@@ -386,7 +475,20 @@ When using this ledger system:
 5. Open a Pull Request
 
 
+### Before submitting changes:
+
+1. Run `make fmt` to format code
+2. Run `make lint` to check for issues
+3. Run `make test` to verify tests pass
+4. Run `make security` to check for security issues
+
+For more information about specific targets, run:
+```bash
+make help
+```
+
 ## Development: follow the below guidelines to introduce a new API.
+
 ### Example: Implementing an API to list all active accounts
 
 1. First, add the interface method in `ledger/interfaces.go`:
