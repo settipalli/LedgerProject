@@ -21,14 +21,22 @@ import (
 func setupTestLogger(t *testing.T) *zap.Logger {
 	testLogger := zaptest.NewLogger(t)
 	// Initialize the package-level logger
-	logger.Init(true) // Set to development mode
+	if err := logger.Init(true); err != nil {
+		t.Fatalf("Failed to initialize logger: %v", err)
+	}
 	return testLogger
 }
 
 func setupTest(t *testing.T) (*Server, *MockLedger) {
 	// Setup test logger
 	testLogger := setupTestLogger(t)
-	defer testLogger.Sync()
+	defer func() {
+		err := testLogger.Sync()
+		if err != nil {
+			t.Logf("Failed to sync logger: %v", err)
+			// Note: We don't fail the test here since this is cleanup code
+		}
+	}()
 
 	mockLedger := new(MockLedger)
 	server := &Server{
@@ -191,7 +199,10 @@ func TestGetBalanceHandler(t *testing.T) {
 		assert.Equal(t, http.StatusOK, rr.Code)
 
 		var response map[string]models.Money
-		json.NewDecoder(rr.Body).Decode(&response)
+		if err := json.NewDecoder(rr.Body).Decode(&response); err != nil {
+			t.Fatalf("Failed to decode response: %v", err)
+		}
+
 		assert.Equal(t, balance, response["balance"])
 		mockLedger.AssertExpectations(t)
 	})
@@ -255,7 +266,10 @@ func TestGetTransactionHistoryHandler(t *testing.T) {
 		assert.Equal(t, http.StatusOK, rr.Code)
 
 		var response []models.Transaction
-		json.NewDecoder(rr.Body).Decode(&response)
+		if err := json.NewDecoder(rr.Body).Decode(&response); err != nil {
+			t.Fatalf("Failed to decode response: %v", err)
+		}
+
 		assert.Equal(t, len(history), len(response))
 		assert.Equal(t, history[0].ID, response[0].ID)
 		assert.Equal(t, history[1].ID, response[1].ID)
@@ -277,7 +291,10 @@ func TestGetTransactionHistoryHandler(t *testing.T) {
 		assert.Equal(t, http.StatusOK, rr.Code)
 
 		var response []models.Transaction
-		json.NewDecoder(rr.Body).Decode(&response)
+		if err := json.NewDecoder(rr.Body).Decode(&response); err != nil {
+			t.Fatalf("Failed to decode response: %v", err)
+		}
+
 		assert.Empty(t, response)
 		mockLedger.AssertExpectations(t)
 	})

@@ -85,23 +85,19 @@ func (l *ledger) RecordTransaction(tx models.Transaction) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	// Store initial balances for verification
-	initialDebitBalance := decimal.Zero
-	initialCreditBalance := decimal.Zero
-
 	debitAcc, exists := l.accounts[tx.DebitAccount]
 	if !exists {
 		log.Error("Debit account not found", zap.String("account_id", tx.DebitAccount))
 		return fmt.Errorf("debit account %s does not exist", tx.DebitAccount)
 	}
-	initialDebitBalance = debitAcc.Balance.Amount
+	initialDebitBalance := debitAcc.Balance.Amount
 
 	creditAcc, exists := l.accounts[tx.CreditAccount]
 	if !exists {
 		log.Error("Credit account not found", zap.String("account_id", tx.CreditAccount))
 		return fmt.Errorf("credit account %s does not exist", tx.CreditAccount)
 	}
-	initialCreditBalance = creditAcc.Balance.Amount
+	initialCreditBalance := creditAcc.Balance.Amount
 
 	if debitAcc.Currency != tx.Amount.Currency || creditAcc.Currency != tx.Amount.Currency {
 		log.Error("Currency mismatch",

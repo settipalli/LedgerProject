@@ -26,7 +26,9 @@ type testSetup struct {
 func setupTestLogger(t *testing.T) *zap.Logger {
 	testLogger := zaptest.NewLogger(t)
 	// Initialize the package-level logger
-	logger.Init(true) // Set to development mode
+	if err := logger.Init(true); err != nil {
+		t.Fatalf("Failed to initialize logger: %v", err)
+	}
 	return testLogger
 }
 
@@ -38,7 +40,12 @@ func setupTest(t *testing.T) *testSetup {
 
 	// Setup test logger
 	testLogger := setupTestLogger(t)
-	defer testLogger.Sync()
+	defer func() {
+		err := testLogger.Sync()
+		if err != nil {
+			t.Logf("Failed to sync logger: %v", err)
+		}
+	}()
 
 	// Initialize currency validator
 	validator, err := services.NewCurrencyValidator(cfg)

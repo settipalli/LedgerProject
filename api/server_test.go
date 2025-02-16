@@ -185,7 +185,7 @@ func TestServerStart(t *testing.T) {
 // Helper function to find a route in the router
 func findRoute(router *mux.Router, path, method string) *mux.Route {
 	var foundRoute *mux.Route
-	router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+	_ = router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		tpl, err := route.GetPathTemplate()
 		if err != nil {
 			return nil
@@ -203,6 +203,7 @@ func findRoute(router *mux.Router, path, method string) *mux.Route {
 
 		return nil
 	})
+
 	return foundRoute
 }
 
@@ -227,8 +228,12 @@ func TestServerIntegration(t *testing.T) {
 	cfg := &config.Config{ServerPort: ":8081"}
 	server := NewServer(mockLedger, cfg)
 
-	// Start server
-	go server.Start()
+	// Start server in goroutine
+	go func() {
+		err := server.Start()
+		// Should only return with error
+		assert.NotNil(t, err)
+	}()
 
 	// Test complete flow: Create account -> Record transaction -> Get balance -> Get history
 	t.Run("complete flow", func(t *testing.T) {

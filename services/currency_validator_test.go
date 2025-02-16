@@ -15,7 +15,9 @@ import (
 func setupTestLogger(t *testing.T) *zap.Logger {
 	testLogger := zaptest.NewLogger(t)
 	// Initialize the package-level logger
-	logger.Init(true) // Set to development mode
+	if err := logger.Init(true); err != nil {
+		t.Fatalf("Failed to initialize logger: %v", err)
+	}
 	return testLogger
 }
 
@@ -54,7 +56,12 @@ func setupTestData(t *testing.T) (string, *config.Config, func()) {
 
 	// Setup test logger
 	testLogger := setupTestLogger(t)
-	defer testLogger.Sync()
+	defer func() {
+		err := testLogger.Sync()
+		if err != nil {
+			t.Logf("Failed to sync logger: %v", err)
+		}
+	}()
 
 	// Return cleanup function
 	cleanup := func() {
@@ -74,7 +81,12 @@ func TestNewCurrencyValidator(t *testing.T) {
 	if err := os.Chdir(tmpDir); err != nil {
 		t.Fatalf("Failed to change working directory: %v", err)
 	}
-	defer os.Chdir(originalWd)
+	defer func() {
+		if err := os.Chdir(originalWd); err != nil {
+			// Log the error but don't fail the test
+			t.Logf("Failed to change back to original directory: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		name    string
@@ -119,7 +131,11 @@ func TestCurrencyValidator_IsValid(t *testing.T) {
 	if err := os.Chdir(tmpDir); err != nil {
 		t.Fatalf("Failed to change working directory: %v", err)
 	}
-	defer os.Chdir(originalWd)
+	defer func() {
+		if err := os.Chdir(originalWd); err != nil {
+			t.Logf("Failed to change back to original directory: %v", err)
+		}
+	}()
 
 	cv, err := NewCurrencyValidator(cfg)
 	if err != nil {
@@ -172,7 +188,11 @@ func TestCurrencyValidator_Concurrent(t *testing.T) {
 	if err := os.Chdir(tmpDir); err != nil {
 		t.Fatalf("Failed to change working directory: %v", err)
 	}
-	defer os.Chdir(originalWd)
+	defer func() {
+		if err := os.Chdir(originalWd); err != nil {
+			t.Logf("Failed to change back to original directory: %v", err)
+		}
+	}()
 
 	cv, err := NewCurrencyValidator(cfg)
 	if err != nil {
@@ -208,7 +228,12 @@ func TestCurrencyValidator_FileNotFound(t *testing.T) {
 	if err := os.Chdir(tmpDir); err != nil {
 		t.Fatalf("Failed to change working directory: %v", err)
 	}
-	defer os.Chdir(originalWd)
+
+	defer func() {
+		if err := os.Chdir(originalWd); err != nil {
+			t.Logf("Failed to change back to original directory: %v", err)
+		}
+	}()
 
 	_, err = NewCurrencyValidator(&config.Config{
 		CurrencyFile: "nonexistent/path/currency.json",
@@ -243,7 +268,12 @@ func TestCurrencyValidator_InvalidJSON(t *testing.T) {
 	if err := os.Chdir(tmpDir); err != nil {
 		t.Fatalf("Failed to change working directory: %v", err)
 	}
-	defer os.Chdir(originalWd)
+
+	defer func() {
+		if err := os.Chdir(originalWd); err != nil {
+			t.Logf("Failed to change back to original directory: %v", err)
+		}
+	}()
 
 	_, err = NewCurrencyValidator(&config.Config{
 		CurrencyFile: filePath,

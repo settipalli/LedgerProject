@@ -55,7 +55,13 @@ func main() {
 	if err := app.Start(context.Background()); err != nil {
 		logger.Get().Fatal("Failed to start application", zap.Error(err))
 	}
-	defer app.Stop(context.Background())
+
+	defer func() {
+		if err := app.Stop(context.Background()); err != nil {
+			logger.Get().Fatal("Failed to stop application", zap.Error(err))
+		}
+	}()
+
 	<-app.Done()
 }
 
