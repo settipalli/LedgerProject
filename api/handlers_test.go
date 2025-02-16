@@ -7,6 +7,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
+	"ledgerproject/logger"
 	"ledgerproject/models"
 	"net/http"
 	"net/http/httptest"
@@ -14,8 +17,19 @@ import (
 	"time"
 )
 
-// Test helpers
-func setupTest() (*Server, *MockLedger) {
+// setupTestLogger initializes a test logger
+func setupTestLogger(t *testing.T) *zap.Logger {
+	testLogger := zaptest.NewLogger(t)
+	// Initialize the package-level logger
+	logger.Init(true) // Set to development mode
+	return testLogger
+}
+
+func setupTest(t *testing.T) (*Server, *MockLedger) {
+	// Setup test logger
+	testLogger := setupTestLogger(t)
+	defer testLogger.Sync()
+
 	mockLedger := new(MockLedger)
 	server := &Server{
 		router: mux.NewRouter(),
@@ -27,7 +41,7 @@ func setupTest() (*Server, *MockLedger) {
 // CreateAccountHandler tests
 func TestCreateAccountHandler(t *testing.T) {
 	t.Run("successful account creation", func(t *testing.T) {
-		server, mockLedger := setupTest()
+		server, mockLedger := setupTest(t)
 
 		account := models.Account{
 			ID:       "ACC123",
@@ -53,7 +67,7 @@ func TestCreateAccountHandler(t *testing.T) {
 	})
 
 	t.Run("invalid json body", func(t *testing.T) {
-		server, _ := setupTest()
+		server, _ := setupTest(t)
 
 		req := httptest.NewRequest("POST", "/accounts", bytes.NewBufferString("invalid json"))
 		rr := httptest.NewRecorder()
@@ -64,7 +78,7 @@ func TestCreateAccountHandler(t *testing.T) {
 	})
 
 	t.Run("ledger error", func(t *testing.T) {
-		server, mockLedger := setupTest()
+		server, mockLedger := setupTest(t)
 
 		account := models.Account{
 			ID:       "ACC123",
@@ -93,7 +107,7 @@ func TestCreateAccountHandler(t *testing.T) {
 // RecordTransactionHandler tests
 func TestRecordTransactionHandler(t *testing.T) {
 	t.Run("successful transaction recording", func(t *testing.T) {
-		server, mockLedger := setupTest()
+		server, mockLedger := setupTest(t)
 
 		tx := models.Transaction{
 			ID:            "TX123",
@@ -119,7 +133,7 @@ func TestRecordTransactionHandler(t *testing.T) {
 	})
 
 	t.Run("invalid json body", func(t *testing.T) {
-		server, _ := setupTest()
+		server, _ := setupTest(t)
 
 		req := httptest.NewRequest("POST", "/transactions", bytes.NewBufferString("invalid json"))
 		rr := httptest.NewRecorder()
@@ -130,7 +144,7 @@ func TestRecordTransactionHandler(t *testing.T) {
 	})
 
 	t.Run("ledger error", func(t *testing.T) {
-		server, mockLedger := setupTest()
+		server, mockLedger := setupTest(t)
 
 		tx := models.Transaction{
 			ID:            "TX123",
@@ -158,7 +172,7 @@ func TestRecordTransactionHandler(t *testing.T) {
 // GetBalanceHandler tests
 func TestGetBalanceHandler(t *testing.T) {
 	t.Run("successful balance retrieval", func(t *testing.T) {
-		server, mockLedger := setupTest()
+		server, mockLedger := setupTest(t)
 
 		accountID := "ACC123"
 		balance := models.Money{
@@ -183,7 +197,7 @@ func TestGetBalanceHandler(t *testing.T) {
 	})
 
 	t.Run("account not found", func(t *testing.T) {
-		server, mockLedger := setupTest()
+		server, mockLedger := setupTest(t)
 
 		accountID := "NONEXISTENT"
 		mockLedger.On("GetAccountBalance", accountID).Return(models.Money{}, fmt.Errorf("account not found"))
@@ -202,7 +216,7 @@ func TestGetBalanceHandler(t *testing.T) {
 // GetTransactionHistoryHandler tests
 func TestGetTransactionHistoryHandler(t *testing.T) {
 	t.Run("successful history retrieval", func(t *testing.T) {
-		server, mockLedger := setupTest()
+		server, mockLedger := setupTest(t)
 
 		accountID := "ACC123"
 		history := []models.Transaction{
@@ -249,7 +263,7 @@ func TestGetTransactionHistoryHandler(t *testing.T) {
 	})
 
 	t.Run("empty history", func(t *testing.T) {
-		server, mockLedger := setupTest()
+		server, mockLedger := setupTest(t)
 
 		accountID := "ACC123"
 		mockLedger.On("GetTransactionHistory", accountID).Return([]models.Transaction{})

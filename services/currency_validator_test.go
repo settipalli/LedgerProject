@@ -1,12 +1,23 @@
 package services
 
 import (
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 	"ledgerproject/config"
+	"ledgerproject/logger"
 	"os"
 	"path/filepath"
 	"sync"
 	"testing"
 )
+
+// setupTestLogger initializes a test logger
+func setupTestLogger(t *testing.T) *zap.Logger {
+	testLogger := zaptest.NewLogger(t)
+	// Initialize the package-level logger
+	logger.Init(true) // Set to development mode
+	return testLogger
+}
 
 // TestData represents sample currency data for testing
 const TestData = `{
@@ -40,6 +51,10 @@ func setupTestData(t *testing.T) (string, *config.Config, func()) {
 		ServerPort:   ":8080",
 		CurrencyFile: filePath,
 	}
+
+	// Setup test logger
+	testLogger := setupTestLogger(t)
+	defer testLogger.Sync()
 
 	// Return cleanup function
 	cleanup := func() {

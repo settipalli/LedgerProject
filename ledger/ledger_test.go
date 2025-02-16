@@ -5,7 +5,10 @@ import (
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 	"ledgerproject/config"
+	"ledgerproject/logger"
 	"ledgerproject/models"
 	"ledgerproject/services"
 	"testing"
@@ -19,11 +22,23 @@ type testSetup struct {
 	invalidCurr string
 }
 
+// setupTestLogger initializes a test logger
+func setupTestLogger(t *testing.T) *zap.Logger {
+	testLogger := zaptest.NewLogger(t)
+	// Initialize the package-level logger
+	logger.Init(true) // Set to development mode
+	return testLogger
+}
+
 func setupTest(t *testing.T) *testSetup {
 	// Create test config with test currency file
 	cfg := &config.Config{
 		CurrencyFile: "../data/iso4217_currency_test.json",
 	}
+
+	// Setup test logger
+	testLogger := setupTestLogger(t)
+	defer testLogger.Sync()
 
 	// Initialize currency validator
 	validator, err := services.NewCurrencyValidator(cfg)
