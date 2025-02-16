@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"github.com/gorilla/mux"
 	"ledgerproject/config"
 	"ledgerproject/ledger"
@@ -11,13 +12,24 @@ type Server struct {
 	router *mux.Router
 	ledger ledger.LedgerService
 	config *config.Config
+	server *http.Server
 }
 
 func NewServer(l ledger.LedgerService, c *config.Config) *Server {
+	r := mux.NewRouter()
 	s := &Server{
-		router: mux.NewRouter(),
+		router: r,
 		ledger: l,
 		config: c,
+		server: &http.Server{
+			Addr:              c.ServerPort,
+			Handler:           r,
+			ReadTimeout:       c.ReadTimeout,
+			WriteTimeout:      c.WriteTimeout,
+			IdleTimeout:       c.IdleTimeout,
+			ReadHeaderTimeout: c.ReadHeaderTimeout,
+			MaxHeaderBytes:    c.MaxHeaderBytes,
+		},
 	}
 	s.setupRoutes()
 	return s
@@ -31,5 +43,10 @@ func (s *Server) setupRoutes() {
 }
 
 func (s *Server) Start() error {
-	return http.ListenAndServe(s.config.ServerPort, s.router)
+	return s.server.ListenAndServe()
+}
+
+// Graceful shutdown
+func (s *Server) Shutdown(ctx context.Context) error {
+	return s.server.Shutdown(ctx)
 }

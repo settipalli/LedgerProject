@@ -12,6 +12,7 @@ import (
 	"ledgerproject/services"
 	"os"
 	"strings"
+	"time"
 )
 
 // getEnvironmentOption returns the appropriate fx.Option based on the environment
@@ -72,9 +73,20 @@ func registerHooks(lc fx.Lifecycle, server *api.Server, log *zap.Logger) {
 		},
 		OnStop: func(ctx context.Context) error {
 			log.Info("Stopping server")
+
+			// Graceful shutdown with timeout
+			shutdownCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+			defer cancel()
+
+			if err := server.Shutdown(shutdownCtx); err != nil {
+				log.Error("Server shutdown error", zap.Error(err))
+				return err
+			}
+
 			if err := logger.Sync(); err != nil {
 				log.Error("Failed to sync logger", zap.Error(err))
 			}
+
 			return nil
 		},
 	})

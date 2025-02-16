@@ -84,7 +84,16 @@ func (s *Server) GetBalanceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Info("Account balance retrieved successfully", zap.String("account_id", accountID))
-	json.NewEncoder(w).Encode(map[string]models.Money{"balance": balance})
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(map[string]models.Money{"balance": balance}); err != nil {
+		log.Error("Failed to encode balance response",
+			zap.Error(err),
+			zap.String("account_id", accountID))
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
+
 }
 
 func (s *Server) GetTransactionHistoryHandler(w http.ResponseWriter, r *http.Request) {
@@ -94,5 +103,16 @@ func (s *Server) GetTransactionHistoryHandler(w http.ResponseWriter, r *http.Req
 
 	history := s.ledger.GetTransactionHistory(accountID)
 	log.Info("Successfully generated transaction history", zap.String("account_id", accountID))
-	json.NewEncoder(w).Encode(history)
+
+	// Set content type header
+	w.Header().Set("Content-Type", "application/json")
+
+	// Handle potential encoding error
+	if err := json.NewEncoder(w).Encode(history); err != nil {
+		log.Error("Failed to encode transaction history",
+			zap.Error(err),
+			zap.String("account_id", accountID))
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
