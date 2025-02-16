@@ -242,7 +242,7 @@ curl -X POST http://localhost:8080/transactions \
 ### 3. Check Account Balances
 
 ```bash
-# Check Cash Account Balance (Should be 13,000)
+# Check Cash Account Balance (Should be 2,000)
 curl -X GET http://localhost:8080/accounts/1001/balance
 
 # Check Loan Account Balance (Should be 10,000)
@@ -480,7 +480,7 @@ Example response:
 5. Implement database storage option
 6. Add metrics and monitoring
 7. Add API documentation using Swagger
-8. Implement request validation middleware
+8. Implement rate limits and request validation middleware
 9. Add support for conversion across multiple currencies
 
 
